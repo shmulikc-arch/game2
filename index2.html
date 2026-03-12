@@ -9,114 +9,33 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --gold: #D4AF37; 
-            --dark-bg: #0a0e17;
-        }
-        
-        body, html { 
-            margin: 0; padding: 0; min-height: 100%; 
-            font-family: 'Assistant', sans-serif; 
-            background: radial-gradient(circle at center, #1a2a6c 0%, #0a0e17 100%);
-            color: white;
-            overflow-x: hidden;
-        }
-
+        :root { --gold: #D4AF37; --dark-bg: #0a0e17; }
+        body, html { margin: 0; padding: 0; min-height: 100%; font-family: 'Assistant', sans-serif; background: radial-gradient(circle at center, #1a2a6c 0%, #0a0e17 100%); color: white; overflow-x: hidden; }
         #screen-view { display: flex; text-align: center; padding: 10px; min-height: 100vh; flex-direction: column; align-items: center; box-sizing: border-box; }
-        
         .score-board { display: flex; justify-content: space-around; width: 100%; max-width: 900px; font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; align-items: center; color: var(--gold); }
-        
-        .logo-container { width: 180px; height: 180px; border: 3px solid var(--gold); border-radius: 30px; overflow: hidden; box-shadow: 0 0 25px var(--gold); background: #000; }
+        .logo-container { width: 150px; height: 150px; border: 3px solid var(--gold); border-radius: 30px; overflow: hidden; box-shadow: 0 0 25px var(--gold); background: #000; }
         .logo-main { width: 100%; height: 100%; object-fit: cover; }
-
-        .question-card { 
-            background: rgba(255, 255, 255, 0.07); 
-            backdrop-filter: blur(10px);
-            padding: 25px; 
-            border-radius: 25px; 
-            border: 1px solid rgba(212, 175, 55, 0.3); 
-            width: 95%; max-width: 850px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
-            margin-bottom: 20px; 
-            z-index: 5;
-        }
-        
-        #question-text { font-size: 2.2rem; margin-bottom: 20px; font-weight: 800; color: white; }
-
-        /* סטופר עיגול בלבד */
+        .question-card { background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(10px); padding: 25px; border-radius: 25px; border: 1px solid rgba(212, 175, 55, 0.3); width: 95%; max-width: 850px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); margin-bottom: 20px; z-index: 5; position: relative; }
+        #question-text { font-size: 2.2rem; margin-bottom: 20px; font-weight: 800; }
         .timer-container { position: relative; width: 120px; height: 120px; margin: 0 auto 20px auto; }
         .timer-svg { transform: rotate(-90deg); width: 120px; height: 120px; }
         .timer-circle-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 10; }
-        .timer-circle-prog { 
-            fill: none; stroke: var(--gold); stroke-width: 10; stroke-linecap: round; 
-            stroke-dasharray: 314; stroke-dashoffset: 0; 
-            transition: stroke-dashoffset 1s linear;
-            filter: drop-shadow(0 0 5px var(--gold));
-        }
-        #timer-number { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            font-size: 1.8rem; font-family: 'Orbitron', monospace;
-            font-weight: 900; color: white;
-        }
-
+        .timer-circle-prog { fill: none; stroke: var(--gold); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; filter: drop-shadow(0 0 5px var(--gold)); }
+        #timer-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.8rem; font-family: 'Orbitron', monospace; font-weight: 900; }
         .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .answer-wrapper { position: relative; }
-        .answer-label { 
-            position: absolute; top: -10px; right: 10px; 
-            background: var(--gold); color: black; 
-            padding: 2px 10px; border-radius: 10px; 
-            font-weight: 800; font-size: 1.1rem; z-index: 20; 
-        }
-
-        .answer-opt { 
-            padding: 18px; 
-            background: rgba(255, 255, 255, 0.9); 
-            color: #1a2a6c;
-            border-radius: 15px; 
-            font-size: 1.7rem; 
-            border: 3px solid transparent; 
-            cursor: pointer; 
-            font-weight: 700; 
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        /* אפקט Hover מודגש */
-        .answer-opt:hover { 
-            transform: translateY(-5px) scale(1.02); 
-            background: #ffffff;
-            border-color: var(--gold);
-            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.5);
-            color: #000;
-        }
-
-        .correct { background: #27ae60 !important; color: white !important; border-color: #2ecc71 !important; }
-        .wrong { background: #c0392b !important; color: white !important; border-color: #e74c3c !important; }
+        .answer-opt { padding: 18px; background: rgba(255, 255, 255, 0.9); color: #1a2a6c; border-radius: 15px; font-size: 1.7rem; border: 3px solid transparent; cursor: pointer; font-weight: 700; transition: all 0.25s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .answer-opt:hover { transform: translateY(-5px); background: #ffffff; border-color: var(--gold); color: #000; }
+        .correct { background: #27ae60 !important; color: white !important; }
+        .wrong { background: #c0392b !important; color: white !important; }
         .disabled { pointer-events: none; opacity: 0.6; }
-        
-        /* מסך סיום */
-        #final-msg { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--dark-bg); z-index: 1000; overflow: hidden;
-        }
-
-        .jumping-container { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        #final-msg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg); z-index: 1000; overflow: hidden; }
         .jump-text { position: absolute; font-weight: 900; color: var(--gold); opacity: 0.4; animation: jump-out 2s ease-out infinite; }
-
-        @keyframes jump-out {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { opacity: 0.7; }
-            100% { transform: scale(3.5); opacity: 0; }
-        }
-
+        @keyframes jump-out { 0% { transform: scale(0.5); opacity: 0; } 50% { opacity: 0.7; } 100% { transform: scale(3.5); opacity: 0; } }
         .final-timer-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; z-index: 10; }
-        .final-timer-svg { transform: rotate(-90deg); width: 300px; height: 300px; }
-        .final-circle-bg { fill: none; stroke: rgba(255,255,255,0.03); stroke-width: 15; }
-        .final-circle-prog { fill: none; stroke: var(--gold); stroke-width: 15; stroke-linecap: round; stroke-dasharray: 880; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; filter: drop-shadow(0 0 15px var(--gold)); }
-        
-        #winner-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; font-family: 'Orbitron', monospace; font-weight: 900; color: white; }
+        #winner-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; font-family: 'Orbitron', monospace; font-weight: 900; }
         #winner-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: var(--gold); display: none; z-index: 20; text-shadow: 0 0 30px var(--gold); width: 100%; text-align: center; }
-        #reset-btn { position: fixed; bottom: 15px; left: 15px; z-index: 2000; padding: 10px 20px; background: var(--gold); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #reset-btn { position: fixed; bottom: 15px; left: 15px; z-index: 2000; padding: 10px; background: var(--gold); border: none; cursor: pointer; border-radius: 5px; font-weight: bold; display: none; }
+        .player-indicator { margin-top: 10px; font-size: 1.2rem; color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -129,21 +48,22 @@
     </div>
 
     <div class="question-card" id="q-card">
-        <h1 id="question-text">לחצו כאן להתחלה</h1>
+        <h1 id="question-text">ממתינים לתחילת המשחק...</h1>
+        <div id="player-tag" class="player-indicator"></div>
         <div class="timer-container" id="timer-ui" style="display:none;">
             <svg class="timer-svg"><circle class="timer-circle-bg" cx="60" cy="60" r="50"></circle><circle id="progress" class="timer-circle-prog" cx="60" cy="60" r="50"></circle></svg>
-            <div id="timer-number">00:15</div>
+            <div id="timer-number">15</div>
         </div>
         <div class="answer-grid" id="answer-grid"></div>
     </div>
 </div>
 
-<button id="reset-btn" onclick="location.reload()">איפוס ↺</button>
+<button id="reset-btn" onclick="resetGame()">איפוס משחק (מנהל) ↺</button>
 
 <div id="final-msg">
     <div class="jumping-container" id="jump-bg"></div>
     <div class="final-timer-container" id="winner-timer-ui">
-        <svg class="final-timer-svg"><circle class="final-circle-bg" cx="150" cy="150" r="140"></circle><circle id="winner-progress" class="final-circle-prog" cx="150" cy="150" r="140"></circle></svg>
+        <svg style="transform: rotate(-90deg); width: 300px; height: 300px;"><circle cx="150" cy="150" r="140" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="15"></circle><circle id="winner-progress" cx="150" cy="150" r="140" fill="none" stroke="var(--gold)" stroke-width="15" stroke-dasharray="880" stroke-dashoffset="0" transition="all 1s linear"></circle></svg>
         <div id="winner-number">10</div>
     </div>
     <div id="winner-text"></div>
@@ -159,91 +79,120 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const playerType = urlParams.get('p'); // 'father', 'mother', 'admin' או null
+
+    // הצגת כפתור איפוס רק למנהל
+    if(playerType === 'admin') {
+        document.getElementById('reset-btn').style.display = 'block';
+        document.getElementById('player-tag').innerText = "מצב מנהל";
+    } else if(playerType) {
+        document.getElementById('player-tag').innerText = "שלט: " + (playerType === 'father' ? "אבא" : "אמא");
+    }
+
     const sndCorrect = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
     const sndWrong = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
-    const sndTension = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3'); 
-    sndTension.loop = true;
+    const sndTension = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3');
 
-    // רשימת שאלות (הסרתי את לוי)
     const questions = [
         { q: "בן כמה חיים?", opts: ["35", "34", "37", "40"], correct: 2 },
         { q: "בן כמה מענדי?", opts: ["35", "34", "37", "40"], correct: 1 },
         { q: "בת כמה גולדי?", opts: ["35", "34", "37", "40"], correct: 0 }
     ];
 
-    let currentQ = 0, scores = { father: 0, mother: 0 }, qCountdown, isGameRunning = false, startTime;
-    const urlParams = new URLSearchParams(window.location.search);
-    const player = urlParams.get('p') || 'preview';
-    const labels = ["א", "ב", "ג", "ד"];
+    let currentQ = 0, scores = { father: 0, mother: 0 }, startTime, qCountdown, isFinished = false;
 
-    function updateCircle(seconds) {
-        document.getElementById('progress').style.strokeDashoffset = 314 - (seconds / 15) * 314;
-        document.getElementById('timer-number').innerText = `00:${seconds < 10 ? '0' + seconds : seconds}`;
-    }
-
-    function renderQuestion() {
-        if (currentQ >= questions.length) { showWinner(); return; }
-        const q = questions[currentQ];
-        document.getElementById('question-text').innerText = q.q;
-        const grid = document.getElementById('answer-grid');
-        grid.innerHTML = '';
-        startTime = Date.now();
-        startQuestionTimer();
+    db.ref('game/state').on('value', snap => {
+        const state = snap.val();
+        if(!state) return;
+        currentQ = state.currentQ;
+        scores = state.scores || { father: 0, mother: 0 };
+        document.getElementById('score-father').innerText = Math.round(scores.father);
+        document.getElementById('score-mother').innerText = Math.round(scores.mother);
         
-        q.opts.forEach((opt, i) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'answer-wrapper';
-            wrapper.innerHTML = `<div class="answer-label">${labels[i]}</div>`;
-            const div = document.createElement('div');
-            div.className = 'answer-opt';
-            div.innerText = opt;
-            div.onclick = () => submitAnswer(i);
-            wrapper.appendChild(div);
-            grid.appendChild(wrapper);
+        if(state.status === 'playing') renderQuestion();
+        if(state.status === 'finished' && !isFinished) { isFinished = true; showWinner(); }
+    });
+
+    if(!playerType || playerType === 'admin') {
+        db.ref('game/lastAnswer').on('value', snap => {
+            const ans = snap.val();
+            if(ans) handleAnswerUpdate(ans);
         });
     }
 
-    function startQuestionTimer() {
-        let timeLeft = 15;
+    function renderQuestion() {
+        const q = questions[currentQ];
+        if(!q) return;
+        document.getElementById('question-text').innerText = q.q;
         document.getElementById('timer-ui').style.display = 'block';
-        updateCircle(timeLeft);
+        const grid = document.getElementById('answer-grid');
+        grid.innerHTML = '';
+        startTime = Date.now();
+        startTimer();
+
+        q.opts.forEach((opt, i) => {
+            const div = document.createElement('div');
+            div.className = 'answer-opt';
+            div.innerText = opt;
+            div.onclick = () => {
+                if(playerType === 'father' || playerType === 'mother' || playerType === 'admin') submitAnswer(i);
+            };
+            grid.appendChild(div);
+        });
+    }
+
+    function startTimer() {
+        let timeLeft = 15;
         clearInterval(qCountdown);
         qCountdown = setInterval(() => {
-            timeLeft--; updateCircle(timeLeft);
-            if (timeLeft <= 0) { clearInterval(qCountdown); nextQuestion(); }
+            timeLeft--;
+            document.getElementById('progress').style.strokeDashoffset = 314 - (timeLeft / 15) * 314;
+            document.getElementById('timer-number').innerText = timeLeft;
+            if(timeLeft <= 0) clearInterval(qCountdown);
         }, 1000);
     }
 
     function submitAnswer(idx) {
-        const isCorrect = idx === questions[currentQ].correct;
         const timeTaken = (Date.now() - startTime) / 1000;
+        const isCorrect = idx === questions[currentQ].correct;
         
-        if(player !== 'preview') {
-            db.ref('game/lastAnswer').set({ who: player, isCorrect, time: timeTaken, qIdx: currentQ, idx });
-        } else {
-            handleAnswerUpdate({ who: 'father', isCorrect, time: timeTaken, qIdx: currentQ, idx });
-        }
+        // מנהל יכול ללחוץ אבל זה נחשב כ"תשובה ניטרלית" רק כדי להעביר שאלה
+        const sender = playerType === 'admin' ? 'father' : playerType;
+        const scoreVal = playerType === 'admin' ? false : isCorrect;
+
+        db.ref('game/lastAnswer').set({ who: sender, isCorrect: scoreVal, time: timeTaken, idx, isAdmin: (playerType === 'admin') });
         document.querySelectorAll('.answer-opt').forEach(opt => opt.classList.add('disabled'));
     }
 
     function handleAnswerUpdate(ans) {
-        if (!ans || ans.qIdx !== currentQ) return;
-        const opts = document.querySelectorAll('.answer-opt');
-        if (ans.isCorrect) {
-            scores[ans.who] += 10 + Math.max(0, (15 - ans.time) / 2);
-            sndCorrect.play();
-            if(opts[ans.idx]) opts[ans.idx].classList.add('correct');
-        } else {
-            sndWrong.play();
-            if(opts[ans.idx]) opts[ans.idx].classList.add('wrong');
+        if(!ans.isAdmin) {
+            if(ans.isCorrect) {
+                scores[ans.who] += 10 + Math.max(0, (15 - ans.time));
+                sndCorrect.play();
+            } else {
+                sndWrong.play();
+            }
+            db.ref('game/state/scores').set(scores);
         }
-        document.getElementById('score-father').innerText = Math.round(scores.father);
-        document.getElementById('score-mother').innerText = Math.round(scores.mother);
-        if(player !== 'preview') db.ref('game/lastAnswer').set(null);
-        setTimeout(nextQuestion, 1500);
+        
+        db.ref('game/lastAnswer').set(null);
+        setTimeout(() => {
+            if(currentQ < questions.length - 1) {
+                db.ref('game/state/currentQ').set(currentQ + 1);
+            } else {
+                db.ref('game/state/status').set('finished');
+            }
+        }, 2000);
     }
 
-    function nextQuestion() { clearInterval(qCountdown); currentQ++; renderQuestion(); }
+    function resetGame() {
+        db.ref('game').set({
+            state: { currentQ: 0, scores: { father: 0, mother: 0 }, status: 'playing' },
+            lastAnswer: null
+        });
+        location.href = window.location.pathname + "?p=admin"; // רענון למצב מנהל
+    }
 
     function createJumpText() {
         const container = document.getElementById('jump-bg');
@@ -260,36 +209,30 @@
     function showWinner() {
         document.getElementById('q-card').style.display = 'none';
         document.getElementById('final-msg').style.display = 'block';
+        if(!playerType) sndTension.play();
         const jumpInterval = setInterval(createJumpText, 200);
         let count = 10;
         const interval = setInterval(() => {
             count--;
-            document.getElementById('winner-progress').style.strokeDashoffset = 880 - (count / 10) * 880;
             document.getElementById('winner-number').innerText = count;
-            if (count === 0) {
+            document.getElementById('winner-progress').style.strokeDashoffset = 880 - (count / 10) * 880;
+            if(count === 0) {
                 clearInterval(interval);
                 clearInterval(jumpInterval);
                 sndTension.pause();
+                const winner = scores.father > scores.mother ? "אבא ניצח!" : "אמא ניצחה!";
+                document.getElementById('winner-text').innerText = winner;
+                document.getElementById('winner-text').style.display = 'block';
                 document.getElementById('winner-timer-ui').style.display = 'none';
-                document.getElementById('jump-bg').innerHTML = '';
-                const winnerText = document.getElementById('winner-text');
-                const winnerName = scores.father > scores.mother ? "אבא ניצח!" : (scores.mother > scores.father ? "אמא ניצחה!" : "תיקו!");
-                winnerText.innerText = winnerName;
-                winnerText.style.display = 'block';
-                confetti({ particleCount: 300, spread: 90, origin: { y: 0.6 } });
+                confetti({ particleCount: 300, spread: 100, origin: { y: 0.6 } });
             }
         }, 1000);
     }
 
+    // רק המקרן (בלי p) יכול להתחיל את המוזיקה והמשחק בלחיצה ראשונה
     document.body.onclick = () => {
-        if (!isGameRunning) { 
-            isGameRunning = true; 
-            sndTension.play(); 
-            if(player !== 'preview') {
-                db.ref('game').set({ currentQ: 0, lastAnswer: null });
-                db.ref('game/lastAnswer').on('value', snap => handleAnswerUpdate(snap.val()));
-            }
-            renderQuestion(); 
+        if(!playerType && currentQ === 0) {
+            db.ref('game/state').update({ status: 'playing' });
         }
     };
 </script>
