@@ -7,71 +7,52 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #D4AF37; --dark-bg: #0a0e17; }
-        body, html { margin: 0; padding: 0; min-height: 100%; font-family: 'Assistant', sans-serif; background: radial-gradient(circle at center, #1a2a6c 0%, #0a0e17 100%); color: white; overflow-x: hidden; }
-        #screen-view { display: flex; text-align: center; padding: 10px; min-height: 100vh; flex-direction: column; align-items: center; box-sizing: border-box; }
-        .score-board { display: flex; justify-content: space-around; width: 100%; max-width: 900px; font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; align-items: center; color: var(--gold); }
-        .logo-container { width: 150px; height: 150px; border: 3px solid var(--gold); border-radius: 30px; overflow: hidden; box-shadow: 0 0 25px var(--gold); background: #000; }
+        body, html { margin: 0; padding: 0; min-height: 100%; font-family: 'Assistant', sans-serif; background: radial-gradient(circle at center, #1a2a6c 0%, #0a0e17 100%); color: white; overflow-x: hidden; text-align: center; }
+        .score-board { display: flex; justify-content: space-around; width: 100%; max-width: 900px; font-size: 2rem; font-weight: 800; margin: 20px auto; align-items: center; color: var(--gold); }
+        .logo-container { width: 120px; height: 120px; border: 3px solid var(--gold); border-radius: 50%; overflow: hidden; box-shadow: 0 0 20px var(--gold); background: #000; }
         .logo-main { width: 100%; height: 100%; object-fit: cover; }
-        .question-card { background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(10px); padding: 25px; border-radius: 25px; border: 1px solid rgba(212, 175, 55, 0.3); width: 95%; max-width: 850px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); margin-bottom: 20px; z-index: 5; position: relative; }
-        #question-text { font-size: 2.2rem; margin-bottom: 20px; font-weight: 800; }
-        .timer-container { position: relative; width: 120px; height: 120px; margin: 0 auto 20px auto; }
-        .timer-svg { transform: rotate(-90deg); width: 120px; height: 120px; }
-        .timer-circle-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 10; }
-        .timer-circle-prog { fill: none; stroke: var(--gold); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; filter: drop-shadow(0 0 5px var(--gold)); }
-        #timer-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.8rem; font-family: 'Orbitron', monospace; font-weight: 900; }
-        .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .answer-opt { padding: 18px; background: rgba(255, 255, 255, 0.9); color: #1a2a6c; border-radius: 15px; font-size: 1.7rem; border: 3px solid transparent; cursor: pointer; font-weight: 700; transition: all 0.25s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .answer-opt:hover { transform: translateY(-5px); background: #ffffff; border-color: var(--gold); color: #000; }
-        .correct { background: #27ae60 !important; color: white !important; }
-        .wrong { background: #c0392b !important; color: white !important; }
-        .disabled { pointer-events: none; opacity: 0.6; }
-        #final-msg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg); z-index: 1000; overflow: hidden; }
-        .jump-text { position: absolute; font-weight: 900; color: var(--gold); opacity: 0.4; animation: jump-out 2s ease-out infinite; }
-        @keyframes jump-out { 0% { transform: scale(0.5); opacity: 0; } 50% { opacity: 0.7; } 100% { transform: scale(3.5); opacity: 0; } }
-        .final-timer-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; z-index: 10; }
-        #winner-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; font-family: 'Orbitron', monospace; font-weight: 900; }
-        #winner-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: var(--gold); display: none; z-index: 20; text-shadow: 0 0 30px var(--gold); width: 100%; text-align: center; }
-        
-        /* כפתורי ניהול שמופיעים רק במצב הראשי */
-        .controls { position: fixed; bottom: 15px; left: 15px; z-index: 2000; display: flex; gap: 10px; }
-        .admin-btn { padding: 12px 20px; background: var(--gold); border: none; cursor: pointer; border-radius: 8px; font-weight: bold; color: black; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .question-card { background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(10px); padding: 30px; border-radius: 25px; border: 1px solid rgba(212, 175, 55, 0.3); width: 90%; max-width: 800px; margin: 20px auto; box-shadow: 0 20px 40px rgba(0,0,0,0.5); position: relative; min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #question-text { font-size: 2.5rem; margin-bottom: 20px; font-weight: 800; width: 100%; }
+        .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .answer-opt { padding: 20px; background: white; color: #1a2a6c; border-radius: 15px; font-size: 1.5rem; cursor: pointer; font-weight: 700; transition: 0.2s; border: none; width: 100%; }
+        .answer-opt:active { transform: scale(0.95); }
+        .disabled { pointer-events: none; opacity: 0.5; }
+        .controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 1000; }
+        .admin-btn { padding: 15px 25px; background: var(--gold); border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: black; font-size: 1.1rem; }
+        #start-btn-large { padding: 25px 50px; font-size: 2.2rem; background: var(--gold); border: none; border-radius: 50px; color: black; font-weight: 800; cursor: pointer; box-shadow: 0 0 40px var(--gold); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .timer-ui { font-family: 'Orbitron', sans-serif; font-size: 2rem; color: var(--gold); margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-<div id="screen-view">
-    <div class="score-board">
-        <div>אמא: <span id="score-mother">0</span></div>
-        <div class="logo-container"><img src="logo.jpeg" class="logo-main" onerror="this.style.display='none'"></div>
-        <div>אבא: <span id="score-father">0</span></div>
-    </div>
+<div class="score-board">
+    <div>אמא: <span id="score-mother">0</span></div>
+    <div class="logo-container"><img src="logo.jpeg" class="logo-main"></div>
+    <div>אבא: <span id="score-father">0</span></div>
+</div>
 
-    <div class="question-card" id="q-card">
-        <h1 id="question-text">לחצו להתחלת המשחק</h1>
-        <div id="player-tag" style="margin-top:10px; color:var(--gold); font-weight:bold;"></div>
-        <div class="timer-container" id="timer-ui" style="display:none;">
-            <svg class="timer-svg"><circle class="timer-circle-bg" cx="60" cy="60" r="50"></circle><circle id="progress" class="timer-circle-prog" cx="60" cy="60" r="50"></circle></svg>
-            <div id="timer-number">15</div>
-        </div>
+<div class="question-card" id="q-card">
+    <h1 id="question-text">מוכנים למשחק?</h1>
+    <div id="setup-area">
+        <button id="start-btn-large" onclick="startGameLocally()">התחל משחק!</button>
+    </div>
+    <div id="game-area" style="display:none; width: 100%;">
+        <div class="timer-ui" id="timer-text">15</div>
         <div class="answer-grid" id="answer-grid"></div>
     </div>
 </div>
 
 <div class="controls" id="admin-controls">
-    <button class="admin-btn" onclick="resetGame()">איפוס משחק ↺</button>
-    <button class="admin-btn" onclick="moveToNext()">דלג שאלה ➔</button>
+    <button class="admin-btn" onclick="resetGameToWaiting()">איפוס משחק ↺</button>
+    <button class="admin-btn" id="next-btn" onclick="nextQuestion()" style="display:none;">שאלה הבאה ➔</button>
 </div>
 
-<div id="final-msg">
-    <div class="jumping-container" id="jump-bg"></div>
-    <div class="final-timer-container" id="winner-timer-ui">
-        <svg style="transform: rotate(-90deg); width: 300px; height: 300px;"><circle cx="150" cy="150" r="140" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="15"></circle><circle id="winner-progress" cx="150" cy="150" r="140" fill="none" stroke="var(--gold)" stroke-width="15" stroke-dasharray="880" stroke-dashoffset="0" transition="all 1s linear"></circle></svg>
-        <div id="winner-number">10</div>
-    </div>
-    <div id="winner-text"></div>
+<div id="final-screen" style="display:none;">
+    <h1 id="winner-display" style="font-size: 4rem; color: var(--gold); text-shadow: 0 0 20px var(--gold); margin-top: 50px;"></h1>
 </div>
 
 <script>
@@ -83,21 +64,10 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const urlParams = new URLSearchParams(window.location.search);
-    let playerType = urlParams.get('p'); // 'father' or 'mother'
-
-    // אם אין פרמטר p, זה מצב מנהל/מקרן
-    if(!playerType) {
-        document.getElementById('player-tag').innerText = "מצב שליטה מרכזי";
-    } else {
-        document.getElementById('player-tag').innerText = "שלט: " + (playerType === 'father' ? "אבא" : "אמא");
-        document.getElementById('admin-controls').style.display = 'none'; // הסתרת כפתורי ניהול בשלטים
-    }
-
-    const sndCorrect = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
-    const sndWrong = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
+    const playerType = urlParams.get('p');
     const sndTension = new Audio('muzik.mp3'); 
+    const sndCorrect = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
 
     const questions = [
         { q: "בן כמה חיים?", opts: ["35", "34", "37", "40"], correct: 2 },
@@ -105,80 +75,73 @@
         { q: "בת כמה גולדי?", opts: ["35", "34", "37", "40"], correct: 0 }
     ];
 
-    let currentQ = 0, scores = { father: 0, mother: 0 }, startTime, qCountdown, isFinished = false;
+    let currentQ = 0, scores = { father: 0, mother: 0 }, timerInterval;
 
     db.ref('game/state').on('value', snap => {
         const state = snap.val();
         if(!state) return;
-        currentQ = state.currentQ;
         scores = state.scores || { father: 0, mother: 0 };
         document.getElementById('score-father').innerText = Math.round(scores.father);
         document.getElementById('score-mother').innerText = Math.round(scores.mother);
-        
-        if(state.status === 'playing') renderQuestion();
-        if(state.status === 'finished' && !isFinished) { isFinished = true; showWinner(); }
+        if(state.status === 'playing') {
+            currentQ = state.currentQ;
+            renderQuestionUI();
+        } else if(state.status === 'finished') {
+            showWinnerUI();
+        } else if(state.status === 'waiting') {
+            resetUIToWaiting();
+        }
     });
 
-    db.ref('game/lastAnswer').on('value', snap => {
-        const ans = snap.val();
-        if(ans && !playerType) handleAnswerUpdate(ans); // רק המצב הראשי מעבד ניקוד
-    });
-
-    function renderQuestion() {
-        const q = questions[currentQ];
-        if(!q) return;
-        document.getElementById('question-text').innerText = q.q;
-        document.getElementById('timer-ui').style.display = 'block';
-        const grid = document.getElementById('answer-grid');
-        grid.innerHTML = '';
-        startTime = Date.now();
-        startTimer();
-
-        q.opts.forEach((opt, i) => {
-            const div = document.createElement('div');
-            div.className = 'answer-opt';
-            div.innerText = opt;
-            div.onclick = () => submitAnswer(i);
-            grid.appendChild(div);
-        });
+    function startGameLocally() {
+        sndTension.loop = true;
+        sndTension.play();
+        db.ref('game/state').set({ status: 'playing', currentQ: 0, scores: { father: 0, mother: 0 } });
     }
 
-    function startTimer() {
-        let timeLeft = 15;
-        clearInterval(qCountdown);
-        qCountdown = setInterval(() => {
-            timeLeft--;
-            document.getElementById('progress').style.strokeDashoffset = 314 - (timeLeft / 15) * 314;
-            document.getElementById('timer-number').innerText = timeLeft;
-            if(timeLeft <= 0) clearInterval(qCountdown);
+    function renderQuestionUI() {
+        document.getElementById('setup-area').style.display = 'none';
+        document.getElementById('game-area').style.display = 'block';
+        document.getElementById('final-screen').style.display = 'none';
+        document.getElementById('q-card').style.display = 'flex';
+        if(!playerType) document.getElementById('next-btn').style.display = 'block';
+        const q = questions[currentQ];
+        document.getElementById('question-text').innerText = q.q;
+        const grid = document.getElementById('answer-grid');
+        grid.innerHTML = '';
+        q.opts.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'answer-opt';
+            btn.innerText = opt;
+            btn.onclick = () => handleAnswerLocally(i);
+            grid.appendChild(btn);
+        });
+        startTimerUI();
+    }
+
+    function startTimerUI() {
+        let time = 15;
+        document.getElementById('timer-text').innerText = time;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            time--;
+            document.getElementById('timer-text').innerText = time;
+            if(time <= 0) clearInterval(timerInterval);
         }, 1000);
     }
 
-    function submitAnswer(idx) {
-        const timeTaken = (Date.now() - startTime) / 1000;
+    function handleAnswerLocally(idx) {
+        if(!playerType) return; 
         const isCorrect = idx === questions[currentQ].correct;
-        
-        // אם זה אבא או אמא, שולח ל-Firebase. אם זה המנהל, זה נחשב כ"תשובה של אבא" לצורך מעבר שאלה
-        const who = playerType || 'father'; 
-        const shouldCount = !!playerType; // מנהל לא מקבל ניקוד
-
-        db.ref('game/lastAnswer').set({ who, isCorrect, time: timeTaken, idx, shouldCount });
-        document.querySelectorAll('.answer-opt').forEach(opt => opt.classList.add('disabled'));
-    }
-
-    function handleAnswerUpdate(ans) {
-        if(ans.shouldCount) {
-            if(ans.isCorrect) {
-                scores[ans.who] += 10 + Math.max(0, (15 - ans.time));
-                sndCorrect.play();
-            } else { sndWrong.play(); }
+        if(isCorrect) {
+            scores[playerType] += 10;
+            sndCorrect.play();
             db.ref('game/state/scores').set(scores);
         }
-        db.ref('game/lastAnswer').set(null);
-        setTimeout(moveToNext, 1500);
+        document.querySelectorAll('.answer-opt').forEach(b => b.classList.add('disabled'));
     }
 
-    function moveToNext() {
+    function nextQuestion() {
         if(currentQ < questions.length - 1) {
             db.ref('game/state/currentQ').set(currentQ + 1);
         } else {
@@ -186,40 +149,34 @@
         }
     }
 
-    function resetGame() {
-        db.ref('game').set({
-            state: { currentQ: 0, scores: { father: 0, mother: 0 }, status: 'playing' },
-            lastAnswer: null
-        });
-        location.reload();
+    function resetGameToWaiting() {
+        sndTension.pause();
+        sndTension.currentTime = 0;
+        db.ref('game/state').set({ status: 'waiting' });
     }
 
-    function showWinner() {
+    function resetUIToWaiting() {
+        document.getElementById('setup-area').style.display = 'block';
+        document.getElementById('game-area').style.display = 'none';
+        document.getElementById('final-screen').style.display = 'none';
+        document.getElementById('q-card').style.display = 'flex';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('question-text').innerText = "מוכנים למשחק?";
+        clearInterval(timerInterval);
+    }
+
+    function showWinnerUI() {
         document.getElementById('q-card').style.display = 'none';
-        document.getElementById('final-msg').style.display = 'block';
-        if(!playerType) { sndTension.loop = true; sndTension.play(); }
-        let count = 10;
-        const interval = setInterval(() => {
-            count--;
-            document.getElementById('winner-number').innerText = count;
-            document.getElementById('winner-progress').style.strokeDashoffset = 880 - (count / 10) * 880;
-            if(count === 0) {
-                clearInterval(interval);
-                sndTension.pause();
-                const winner = scores.father > scores.mother ? "אבא ניצח!" : (scores.mother > scores.father ? "אמא ניצחה!" : "תיקו!");
-                document.getElementById('winner-text').innerText = winner;
-                document.getElementById('winner-text').style.display = 'block';
-                document.getElementById('winner-timer-ui').style.display = 'none';
-                confetti({ particleCount: 300, spread: 100, origin: { y: 0.6 } });
-            }
-        }, 1000);
+        document.getElementById('final-screen').style.display = 'block';
+        const winTxt = scores.father > scores.mother ? "אבא ניצח!" : (scores.mother > scores.father ? "אמא ניצחה!" : "תיקו!");
+        document.getElementById('winner-display').innerText = winTxt;
+        confetti({ particleCount: 300, spread: 100 });
     }
 
-    document.body.onclick = () => {
-        if(!playerType && currentQ === 0) {
-            db.ref('game/state').update({ status: 'playing' });
-        }
-    };
+    if(playerType) {
+        document.getElementById('admin-controls').style.display = 'none';
+        document.getElementById('setup-area').innerHTML = "<h2 style='color:var(--gold)'>ממתינים למנהל...</h2>";
+    }
 </script>
 </body>
 </html>
