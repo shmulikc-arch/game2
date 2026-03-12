@@ -34,8 +34,10 @@
         .final-timer-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; z-index: 10; }
         #winner-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; font-family: 'Orbitron', monospace; font-weight: 900; }
         #winner-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: var(--gold); display: none; z-index: 20; text-shadow: 0 0 30px var(--gold); width: 100%; text-align: center; }
-        #reset-btn { position: fixed; bottom: 15px; left: 15px; z-index: 2000; padding: 10px; background: var(--gold); border: none; cursor: pointer; border-radius: 5px; font-weight: bold; display: none; }
-        .player-indicator { margin-top: 10px; font-size: 1.2rem; color: var(--gold); font-weight: bold; }
+        
+        /* כפתורי ניהול */
+        .admin-controls { position: fixed; bottom: 15px; left: 15px; z-index: 2000; display: none; gap: 10px; }
+        .admin-btn { padding: 10px; background: var(--gold); border: none; cursor: pointer; border-radius: 5px; font-weight: bold; color: black; }
     </style>
 </head>
 <body>
@@ -49,7 +51,7 @@
 
     <div class="question-card" id="q-card">
         <h1 id="question-text">ממתינים לתחילת המשחק...</h1>
-        <div id="player-tag" class="player-indicator"></div>
+        <div id="player-tag" style="margin-top:10px; color:var(--gold); font-weight:bold;"></div>
         <div class="timer-container" id="timer-ui" style="display:none;">
             <svg class="timer-svg"><circle class="timer-circle-bg" cx="60" cy="60" r="50"></circle><circle id="progress" class="timer-circle-prog" cx="60" cy="60" r="50"></circle></svg>
             <div id="timer-number">15</div>
@@ -58,7 +60,10 @@
     </div>
 </div>
 
-<button id="reset-btn" onclick="resetGame()">איפוס משחק (מנהל) ↺</button>
+<div class="admin-controls" id="admin-area">
+    <button class="admin-btn" onclick="resetGame()">איפוס משחק ↺</button>
+    <button class="admin-btn" onclick="skipQuestion()">דלג שאלה ➔</button>
+</div>
 
 <div id="final-msg">
     <div class="jumping-container" id="jump-bg"></div>
@@ -80,19 +85,20 @@
     const db = firebase.database();
 
     const urlParams = new URLSearchParams(window.location.search);
-    const playerType = urlParams.get('p'); // 'father', 'mother', 'admin' או null
+    const playerType = urlParams.get('p');
 
-    // הצגת כפתור איפוס רק למנהל
+    // ניהול מצבי תצוגה
     if(playerType === 'admin') {
-        document.getElementById('reset-btn').style.display = 'block';
+        document.getElementById('admin-area').style.display = 'flex';
         document.getElementById('player-tag').innerText = "מצב מנהל";
     } else if(playerType) {
         document.getElementById('player-tag').innerText = "שלט: " + (playerType === 'father' ? "אבא" : "אמא");
     }
 
+    // מוזיקה מהקובץ שהעלית
     const sndCorrect = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
     const sndWrong = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
-    const sndTension = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3');
+    const sndTension = new Audio('muzik.mp3'); // שימוש בקובץ שהעלית
 
     const questions = [
         { q: "בן כמה חיים?", opts: ["35", "34", "37", "40"], correct: 2 },
@@ -135,9 +141,7 @@
             const div = document.createElement('div');
             div.className = 'answer-opt';
             div.innerText = opt;
-            div.onclick = () => {
-                if(playerType === 'father' || playerType === 'mother' || playerType === 'admin') submitAnswer(i);
-            };
+            div.onclick = () => { if(playerType) submitAnswer(i); };
             grid.appendChild(div);
         });
     }
@@ -156,12 +160,8 @@
     function submitAnswer(idx) {
         const timeTaken = (Date.now() - startTime) / 1000;
         const isCorrect = idx === questions[currentQ].correct;
-        
-        // מנהל יכול ללחוץ אבל זה נחשב כ"תשובה ניטרלית" רק כדי להעביר שאלה
         const sender = playerType === 'admin' ? 'father' : playerType;
-        const scoreVal = playerType === 'admin' ? false : isCorrect;
-
-        db.ref('game/lastAnswer').set({ who: sender, isCorrect: scoreVal, time: timeTaken, idx, isAdmin: (playerType === 'admin') });
+        db.ref('game/lastAnswer').set({ who: sender, isCorrect, time: timeTaken, idx, isAdmin: (playerType === 'admin') });
         document.querySelectorAll('.answer-opt').forEach(opt => opt.classList.add('disabled'));
     }
 
@@ -170,28 +170,29 @@
             if(ans.isCorrect) {
                 scores[ans.who] += 10 + Math.max(0, (15 - ans.time));
                 sndCorrect.play();
-            } else {
-                sndWrong.play();
-            }
+            } else { sndWrong.play(); }
             db.ref('game/state/scores').set(scores);
         }
-        
         db.ref('game/lastAnswer').set(null);
-        setTimeout(() => {
-            if(currentQ < questions.length - 1) {
-                db.ref('game/state/currentQ').set(currentQ + 1);
-            } else {
-                db.ref('game/state/status').set('finished');
-            }
-        }, 2000);
+        setTimeout(moveToNext, 2000);
     }
+
+    function moveToNext() {
+        if(currentQ < questions.length - 1) {
+            db.ref('game/state/currentQ').set(currentQ + 1);
+        } else {
+            db.ref('game/state/status').set('finished');
+        }
+    }
+
+    function skipQuestion() { moveToNext(); }
 
     function resetGame() {
         db.ref('game').set({
             state: { currentQ: 0, scores: { father: 0, mother: 0 }, status: 'playing' },
             lastAnswer: null
         });
-        location.href = window.location.pathname + "?p=admin"; // רענון למצב מנהל
+        location.reload();
     }
 
     function createJumpText() {
@@ -209,7 +210,7 @@
     function showWinner() {
         document.getElementById('q-card').style.display = 'none';
         document.getElementById('final-msg').style.display = 'block';
-        if(!playerType) sndTension.play();
+        if(!playerType) { sndTension.loop = true; sndTension.play(); }
         const jumpInterval = setInterval(createJumpText, 200);
         let count = 10;
         const interval = setInterval(() => {
@@ -221,15 +222,15 @@
                 clearInterval(jumpInterval);
                 sndTension.pause();
                 const winner = scores.father > scores.mother ? "אבא ניצח!" : "אמא ניצחה!";
-                document.getElementById('winner-text').innerText = winner;
-                document.getElementById('winner-text').style.display = 'block';
+                const winnerTxt = document.getElementById('winner-text');
+                winnerTxt.innerText = winner;
+                winnerTxt.style.display = 'block';
                 document.getElementById('winner-timer-ui').style.display = 'none';
                 confetti({ particleCount: 300, spread: 100, origin: { y: 0.6 } });
             }
         }, 1000);
     }
 
-    // רק המקרן (בלי p) יכול להתחיל את המוזיקה והמשחק בלחיצה ראשונה
     document.body.onclick = () => {
         if(!playerType && currentQ === 0) {
             db.ref('game/state').update({ status: 'playing' });
